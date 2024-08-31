@@ -1,0 +1,65 @@
+<!-- historial_movimientos.html -->
+
+{% extends 'inventory/base.html' %}
+
+{% block title %}Historial de Movimientos - Sereias{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Historial de Movimientos de Inventario</h1>
+
+<table class="table table-striped shadow-sm rounded-border">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Producto</th>
+            <th>Concepto</th>
+            <th>Cantidad</th>
+            <th>Observaciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for movimiento in movimientos %}
+        <tr>
+            <td>{{ movimiento.fecha }}</td>
+            <td>{{ movimiento.producto.nombre }}</td>
+            <td>{{ movimiento.concepto }}</td>
+            <td>{{ movimiento.cantidad }}</td>
+            <td>{{ movimiento.observaciones }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No hay movimientos registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if movimientos.has_other_pages %}
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    {% if movimientos.has_previous %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ movimientos.previous_page_number }}" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    {% endif %}
+
+    {% for num in movimientos.paginator.page_range %}
+      {% if movimientos.number == num %}
+        <li class="page-item active"><a class="page-link">{{ num }}</a></li>
+      {% elif num > movimientos.number|add:'-3' and num < movimientos.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+      {% endif %}
+    {% endfor %}
+
+    {% if movimientos.has_next %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ movimientos.next_page_number }}" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

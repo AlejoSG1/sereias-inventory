@@ -1,0 +1,205 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Crear Venta{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Crear Venta</h1>
+
+
+<div class="card card-custom bg-light p-4">
+    <form method="post">
+        {% csrf_token %}
+        <h3>Información del Cliente</h3>
+        {{ cliente_form.as_p }}
+
+        <h3 class="mt-4">Productos</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Precio Total</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody id="formset-container">
+                {{ detalle_venta_formset.management_form }}
+                {% for form in detalle_venta_formset %}
+                    <tr>
+                        <td>{{ form.producto }}</td>
+                        <td>{{ form.cantidad }}</td>
+                        <td class="precio-unitario">
+                            0.00
+                        </td>
+                        <td class="precio-total">
+                            0.00
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm remove-item">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="#" id="add-more" class="btn btn-success">Agregar Producto</a>
+        <hr>
+        <div class="form-check mt-4">
+            <input class="form-check-input" type="checkbox" id="es-pedido" name="es_pedido">
+            <label class="form-check-label" for="es-pedido">¿Enviar pedido?</label>
+        </div>
+        
+        <div id="informacion-envio" style="display: none;">
+            <h3 class="mt-4">Información de Envío</h3>
+            <div class="mb-3">
+                <label for="direccion-envio" class="form-label">Dirección de Envío</label>
+                <textarea class="form-control" id="direccion-envio" name="direccion_envio"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="fecha-envio" class="form-label">Fecha de Envío</label>
+                <input type="date" class="form-control" id="fecha-envio" name="fecha_envio">
+            </div>
+        </div>
+        <hr>
+        <h3>Resumen de la Venta</h3>
+        <p>Total de Productos: <span id="total-productos">0</span></p>
+        <p>Precio Total de Venta: <span id="precio-total-venta">0.00</span> USD</p>
+        
+        <button type="submit" class="btn btn-primary">Registrar Venta</button>
+        <a href="{% url 'inventario_principal' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function() {
+
+        // Función para actualizar los totales en la tabla y en el resumen
+        function actualizarTotales() {
+            let totalProductos = 0;
+            let totalVenta = 0;
+
+            $('#formset-container tr').each(function() {
+                const cantidad = parseInt($(this).find('[name$="cantidad"]').val()) || 0;
+                const precioUnitario = parseFloat($(this).find('.precio-unitario').text()) || 0;
+                const precioTotal = cantidad * precioUnitario;
+
+                $(this).find('.precio-total').text(precioTotal.toFixed(2));
+                totalProductos += cantidad;
+                totalVenta += precioTotal;
+            });
+
+            $('#total-productos').text(totalProductos);
+            $('#precio-total-venta').text(totalVenta.toFixed(2));
+        }
+
+        // Función para obtener el stock disponible y realizar la validación
+        function validarStock(callback) {
+            let errores = [];
+            let promises = [];
+
+            $('#formset-container tr').each(function() {
+                const row = $(this);
+                const productoId = row.find('select[name$="producto"]').val();
+                const cantidadDeseada = parseInt(row.find('input[name$="cantidad"]').val()) || 0;
+
+                if (productoId && cantidadDeseada > 0) {
+                    let promise = $.ajax({
+                        url: `/inventario/obtener_stock/?id=${productoId}`,
+                        method: 'GET',
+                        dataType: 'json',
+                        success: function(data) {
+                            if (cantidadDeseada > data.stock_disponible) {
+                                errores.push(`No hay suficiente stock para ${data.nombre}. Quedan ${data.stock_disponible} unidades.`);
+                            }
+                        },
+                        error: function() {
+                            errores.push(`Error al verificar el stock para el producto con ID ${productoId}.`);
+                        }
+                    });
+                    promises.push(promise);
+                }
+            });
+
+            $.when.apply($, promises).done(function() {
+                callback(errores);
+            });
+        }
+
+        // Evento cuando se selecciona un producto
+        $(document).on('change', '#formset-container select[name$="producto"]', function() {
+            const row = $(this).closest('tr');
+            const productoId = $(this).val();
+
+            if (productoId) {
+                $.ajax({
+                    url: `/inventario/obtener_precio_unitario/?id=${productoId}`,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        row.find('.precio-unitario').text(data.precio_unitario.toFixed(2));
+                        actualizarTotales();
+                    }
+                });
+            }
+        });
+
+        // Evento cuando se cambia la cantidad
+        $(document).on('input', '#formset-container input[name$="cantidad"]', function() {
+            actualizarTotales();
+        });
+
+        // Función para agregar una nueva fila de producto
+        $('#add-more').click(function(e) {
+            e.preventDefault();
+
+            var formsetContainer = $('#formset-container');
+            var totalForms = $('#id_form-TOTAL_FORMS');
+            var formCount = parseInt(totalForms.val());
+
+            var newForm = formsetContainer.find('tr').first().clone();
+
+            newForm.find('select, input').each(function() {
+                var name = $(this).attr('name').replace(/-\d+-/, `-${formCount}-`);
+                var id = $(this).attr('id').replace(/-\d+-/, `-${formCount}-`);
+                $(this).attr({'name': name, 'id': id}).val('');
+            });
+
+            newForm.find('.precio-unitario').text('0.00');
+            newForm.find('.precio-total').text('0.00');
+
+            totalForms.val(formCount + 1);
+            formsetContainer.append(newForm);
+
+            actualizarTotales();
+        });
+
+        // Validar stock al hacer clic en registrar venta
+        $('form').on('submit', function(e) {
+            e.preventDefault();  // Detener el envío del formulario
+
+            validarStock(function(errores) {
+                if (errores.length > 0) {
+                    alert(errores.join('\n'));
+                } else {
+                    $('form').off('submit').submit();  // Reanudar el envío del formulario si no hay errores
+                }
+            });
+        });
+
+        actualizarTotales();
+    });
+    $(document).ready(function() {
+        $('#es-pedido').change(function() {
+            if ($(this).is(':checked')) {
+                $('#informacion-envio').show();
+            } else {
+                $('#informacion-envio').hide();
+            }
+        });
+    });
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,17 @@
+<!-- agregar_producto.html -->
+{% extends 'inventory/base.html' %}
+
+{% block title %}Agregar Producto - Sereias{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Agregar Nuevo Producto</h1>
+
+<div class="card card-custom bg-light p-4">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Guardar Producto</button>
+        <a href="{% url 'inventario_principal' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

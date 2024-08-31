@@ -1,0 +1,9 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Error de Stock{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Error: Stock Insuficiente</h1>
+<p>No hay suficiente stock disponible para completar esta venta.</p>
+<a href="{% url 'crear_venta' %}" class="btn btn-secondary">Regresar</a>
+{% endblock %}

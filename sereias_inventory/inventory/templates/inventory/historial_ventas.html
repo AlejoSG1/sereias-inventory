@@ -1,0 +1,100 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Historial de Ventas - Sereias{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Historial de Ventas</h1>
+
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col">
+            <input type="date" class="form-control" name="fecha_inicio" placeholder="Fecha Inicio" value="{{ request.GET.fecha_inicio }}">
+        </div>
+        <div class="col">
+            <input type="date" class="form-control" name="fecha_fin" placeholder="Fecha Fin" value="{{ request.GET.fecha_fin }}">
+        </div>
+        <div class="col">
+            <select class="form-control" name="cliente">
+                <option value="">Todos los Clientes</option>
+                {% for cliente in clientes %}
+                    <option value="{{ cliente.id }}" {% if request.GET.cliente == cliente.id|stringformat:"s" %}selected{% endif %}>
+                        {{ cliente.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <select class="form-control" name="estado_pago">
+                <option value="">Todos los Estados</option>
+                {% for estado, estado_display in estado_pago_choices %}
+                    <option value="{{ estado }}" {% if request.GET.estado_pago == estado %}selected{% endif %}>
+                        {{ estado_display }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </div>
+</form>
+
+<table class="table table-striped shadow-sm rounded-border">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Saldo Pendiente</th>
+            <th>Estado de Pago</th>
+            <th>Detalle</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for venta in ventas %}
+        <tr>
+            <td>{{ venta.fecha }}</td>
+            <td>{{ venta.cliente.nombre }}</td>
+            <td>${{ venta.total }}</td>
+            <td>${{ venta.saldo_pendiente|floatformat:2 }}</td>  <!-- Columna de saldo pendiente con dos decimales -->
+            <td>{{ venta.get_estado_pago_display }}</td>
+            <td><a href="{% url 'detalle_venta' venta.id %}" class="btn btn-info btn-sm">Ver Detalle</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="text-center">No hay ventas registradas.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if ventas.has_other_pages %}
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    {% if ventas.has_previous %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ ventas.previous_page_number }}" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    {% endif %}
+
+    {% for num in ventas.paginator.page_range %}
+      {% if ventas.number == num %}
+        <li class="page-item active"><a class="page-link">{{ num }}</a></li>
+      {% elif num > ventas.number|add:'-3' and num < ventas.number|add:'3' %}
+        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+      {% endif %}
+    {% endfor %}
+
+    {% if ventas.has_next %}
+    <li class="page-item">
+      <a class="page-link" href="?page={{ ventas.next_page_number }}" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

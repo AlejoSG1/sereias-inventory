@@ -1,0 +1,54 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Detalle de Pedido{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Detalle del Pedido</h1>
+
+<p><strong>ID Pedido:</strong> {{ pedido.venta.id }}</p>
+<p><strong>Cliente:</strong> {{ pedido.venta.cliente.nombre }}</p>
+<p><strong>Dirección de Envío:</strong> {{ pedido.direccion_envio }}</p>
+<p><strong>Estado:</strong> {{ pedido.get_estado_display }}</p>
+<p><strong>Fecha de Envío:</strong> {{ pedido.fecha_envio|date:"d/m/Y" }}</p>
+
+<h3>Productos en el Pedido</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for detalle in pedido.venta.detalles.all %}
+        <tr>
+            <td>{{ detalle.producto.nombre }}</td>
+            <td>{{ detalle.cantidad }}</td>
+            <td>${{ detalle.precio_unitario }}</td>
+            <td>${{ detalle.subtotal }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">No hay productos en este pedido.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="estado">Cambiar Estado del Pedido</label>
+        <select id="estado" name="estado" class="form-control">
+            {% for key, value in pedido.ESTADOS_PEDIDO %}
+                <option value="{{ key }}" {% if pedido.estado == key %}selected{% endif %}>{{ value }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Actualizar Estado</button>
+</form>
+
+<a href="{% url 'lista_pedidos' %}" class="btn btn-secondary mt-3">Volver a la Lista de Pedidos</a>
+{% endblock %}

@@ -1,0 +1,32 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.inventario_principal, name='inventario_principal'),
+    path('agregar/', views.agregar_producto, name='agregar_producto'),
+    path('movimiento/', views.registrar_movimiento_inventario, name='registrar_movimiento'),
+    path('historial/', views.historial_movimientos, name='historial_movimientos'),
+    path('reporte/inventario/', views.reporte_inventario, name='reporte_inventario'),
+    path('reporte/movimientos/', views.reporte_movimientos, name='reporte_movimientos'),
+    path('reporte/bajo_inventario/', views.reporte_bajo_inventario, name='reporte_bajo_inventario'),
+    path('reporte/utilidad/', views.reporte_utilidad, name='reporte_utilidad'),
+    path('clientes/', views.lista_clientes, name='lista_clientes'),
+    path('clientes/crear/', views.crear_cliente, name='crear_cliente'),
+    path('clientes/editar/<int:cliente_id>/', views.editar_cliente, name='editar_cliente'),
+    path('clientes/eliminar/<int:cliente_id>/', views.eliminar_cliente, name='eliminar_cliente'),
+    path('ventas/crear/', views.crear_venta, name='crear_venta'),
+    path('ventas/detalle/<int:venta_id>/', views.detalle_venta, name='detalle_venta'),
+    path('buscar_cliente/', views.buscar_cliente, name='buscar_cliente'),
+    path('obtener_precio_unitario/', views.obtener_precio_unitario, name='obtener_precio_unitario'),
+    path('obtener_stock/', views.obtener_stock, name='obtener_stock'),
+    path('ventas/factura/<int:venta_id>/', views.generar_factura_pdf, name='generar_factura_pdf'),
+    path('ventas/', views.historial_ventas, name='historial_ventas'),
+    path('ventas/<int:venta_id>/', views.detalle_venta, name='detalle_venta'),
+    path('pedidos/', views.lista_pedidos, name='lista_pedidos'),
+    path('pedidos/<int:pedido_id>/', views.detalle_pedido, name='detalle_pedido'),
+    path('pedidos/<int:pedido_id>/actualizar/', views.actualizar_estado_pedido, name='actualizar_estado_pedido'),
+    path('ventas/<int:venta_id>/registrar_pago/', views.registrar_pago, name='registrar_pago'),
+    path('pagos/', views.lista_pagos, name='lista_pagos'),
+    path('pagos/excel/', views.generar_excel_pagos, name='generar_excel_pagos'),
+    path('dashboard/', views.dashboard_analisis_ventas, name='dashboard_analisis_ventas'),
+]

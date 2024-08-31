@@ -1,0 +1,75 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Control de Inventario - Sereias{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Control de Inventario - Sereias</h1>
+
+<!-- Tarjetas Resumen -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card card-custom bg-light">
+            <div class="card-body">
+                <h5 class="card-title">Costo del Inventario</h5>
+                <p class="card-text">{{ total_costo_inventario }} USD</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom bg-light">
+            <div class="card-body">
+                <h5 class="card-title">Ingresos Esperados</h5>
+                <p class="card-text">{{ total_ingresos_esperados }} USD</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom bg-light">
+            <div class="card-body">
+                <h5 class="card-title">Utilidad Esperada</h5>
+                <p class="card-text">{{ total_utilidad_esperada }} USD</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Productos -->
+<table class="table table-striped shadow-sm rounded-border">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Categoría</th>
+            <th>Producto</th>
+            <th>Presentación</th>
+            <th>Unidad</th>
+            <th>Cantidad</th>
+            <th>Costo Unitario</th>
+            <th>Total Costo</th>
+            <th>Precio Unitario</th>
+            <th>Total Precio</th>
+            <th>Utilidad Operativa</th>
+            <th>Utilidad Unitaria</th>
+            <th>Rentabilidad</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for producto in productos %}
+        <tr>
+            <td>{{ producto.codigo }}</td>
+            <td>{{ producto.categoria }}</td>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.presentacion }}</td>
+            <td>{{ producto.unidad }}</td>
+            <td>{{ producto.cantidad }}</td>
+            <td>{{ producto.costo_unitario }}</td>
+            <td>{{ producto.total_costo }}</td>
+            <td>{{ producto.precio_unitario }}</td>
+            <td>{{ producto.total_precio }}</td>
+            <td>{{ producto.utilidad_operativa }}</td>
+            <td>{{ producto.utilidad_unitaria }}</td>
+            <td>{{ producto.rentabilidad }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

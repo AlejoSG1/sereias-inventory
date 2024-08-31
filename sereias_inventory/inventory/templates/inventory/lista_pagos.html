@@ -1,0 +1,59 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Lista de Pagos{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Lista de Pagos</h1>
+
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col">
+            <input type="date" class="form-control" name="fecha_inicio" placeholder="Fecha Inicio" value="{{ request.GET.fecha_inicio }}">
+        </div>
+        <div class="col">
+            <input type="date" class="form-control" name="fecha_fin" placeholder="Fecha Fin" value="{{ request.GET.fecha_fin }}">
+        </div>
+        <div class="col">
+            <select class="form-control" name="forma_pago">
+                <option value="">Todas las Formas de Pago</option>
+                {% for key, value in forma_pago_choices %}
+                    <option value="{{ key }}" {% if request.GET.forma_pago == key %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+        <div class="col">
+            <a href="{% url 'generar_excel_pagos' %}?fecha_inicio={{ request.GET.fecha_inicio }}&fecha_fin={{ request.GET.fecha_fin }}&forma_pago={{ request.GET.forma_pago }}" class="btn btn-success">Generar Excel</a>
+        </div>
+    </div>
+</form>
+
+<table class="table table-striped shadow-sm rounded-border">
+    <thead>
+        <tr>
+            <th>Fecha de Pago</th>
+            <th>Venta</th>
+            <th>Cliente</th>
+            <th>Monto</th>
+            <th>Forma de Pago</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pago in pagos %}
+        <tr>
+            <td>{{ pago.fecha_pago|date:"d/m/Y" }}</td>
+            <td>{{ pago.venta.id }}</td>
+            <td>{{ pago.venta.cliente.nombre }}</td>
+            <td>${{ pago.monto }}</td>
+            <td>{{ pago.get_forma_pago_display }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No se encontraron pagos.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

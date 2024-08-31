@@ -1,0 +1,84 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Detalle de Venta - Sereias{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Detalle de Venta</h1>
+
+{% if messages %}
+    <div class="alert alert-danger mt-4">
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<p><strong>Cliente:</strong> {{ venta.cliente.nombre }}</p>
+<p><strong>ID:</strong> {{ venta.cliente.identificacion }}</p>
+<p><strong>Email:</strong> {{ venta.cliente.email }}</p>
+<p><strong>Teléfono:</strong> {{ venta.cliente.telefono }}</p>
+<p><strong>Dirección:</strong> {{ venta.cliente.direccion }}</p>
+<p><strong>Fecha:</strong> {{ venta.fecha }}</p>
+<p><strong>Total:</strong> ${{ venta.total }}</p>
+<p><strong>Saldo Pendiente:</strong> ${{ venta.saldo_pendiente|floatformat:2 }}</p>
+
+{% if venta.es_pedido %}
+<h3>Detalles del Pedido</h3>
+<p><strong>Dirección de Envío:</strong> {{ venta.pedido.direccion_envio }}</p>
+<p><strong>Fecha de Envío:</strong> {{ venta.pedido.fecha_envio }}</p>
+<p><strong>Entregado:</strong> {{ venta.pedido.entregado|yesno:"Sí,No" }}</p>
+{% endif %}
+
+<h3>Productos Vendidos</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for detalle in venta.detalles.all %}
+        <tr>
+            <td>{{ detalle.producto.nombre }}</td>
+            <td>{{ detalle.cantidad }}</td>
+            <td>${{ detalle.precio_unitario }}</td>
+            <td>${{ detalle.subtotal }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Registrar Pago</h3>
+
+<form method="post" action="{% url 'registrar_pago' venta.id %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="monto">Monto del Pago</label>
+        <input type="number" class="form-control" id="monto" name="monto" 
+               min="0.00" step="0.01" required>
+    </div>
+    <div class="form-group">
+        <label for="fecha_pago">Fecha del Pago</label>
+        <input type="date" class="form-control" id="fecha_pago" name="fecha_pago" value="{{ venta.fecha|date:'Y-m-d' }}" required>
+    </div>
+    <div class="form-group">
+        <label for="forma_pago">Forma de Pago</label>
+        <select class="form-control" id="forma_pago" name="forma_pago" required>
+            <option value="" disabled selected>Seleccione una opción</option>
+            <option value="transferencia">Transferencia</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="cheque">Cheque</option>
+            <option value="tarjeta">Tarjeta</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success mt-3">Registrar Pago</button>
+</form>
+
+<a href="{% url 'generar_factura_pdf' venta.id %}" class="btn btn-primary mt-3">Descargar Factura en PDF</a>
+<a href="{% url 'historial_ventas' %}" class="btn btn-secondary mt-3">Volver</a>
+{% endblock %}

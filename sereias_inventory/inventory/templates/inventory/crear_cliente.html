@@ -1,0 +1,16 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Agregar Cliente{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Agregar Cliente</h1>
+
+<div class="card card-custom bg-light p-4">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Guardar Cliente</button>
+        <a href="{% url 'lista_clientes' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

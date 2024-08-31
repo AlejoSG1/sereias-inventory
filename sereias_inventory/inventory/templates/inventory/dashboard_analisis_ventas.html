@@ -1,0 +1,112 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Dashboard de Análisis de Ventas{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Dashboard de Análisis de Ventas</h1>
+
+<!-- Resumen General -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card card-custom bg-light">
+            <div class="card-body">
+                <h5 class="card-title">Total de Ventas</h5>
+                <p class="card-text">{{ total_ventas|floatformat:2 }} USD</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom bg-light">
+            <div class="card-body">
+                <h5 class="card-title">Número de Ventas</h5>
+                <p class="card-text">{{ numero_ventas }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-custom bg-light">
+            <div class="card-body">
+                <h5 class="card-title">Utilidad Generada por Periodo</h5>
+                <p class="card-text">{{ utilidad_por_periodo|floatformat:2 }} USD</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Productos Más Vendidos -->
+<h3>Productos Más Vendidos</h3>
+<table class="table table-striped shadow-sm rounded-border">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad Vendida</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for producto in productos_mas_vendidos %}
+        <tr>
+            <td>{{ producto.producto__nombre }}</td>
+            <td>{{ producto.cantidad_total }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Productos Menos Vendidos -->
+<h3>Productos Menos Vendidos</h3>
+<table class="table table-striped shadow-sm rounded-border">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cantidad Vendida</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for producto in productos_menos_vendidos %}
+        <tr>
+            <td>{{ producto.producto__nombre }}</td>
+            <td>{{ producto.cantidad_total }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Clientes Recurrentes -->
+<h3>Clientes Recurrentes</h3>
+<table class="table table-striped shadow-sm rounded-border">
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Número de Compras</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cliente in clientes_recurrentes %}
+        <tr>
+            <td>{{ cliente.nombre }}</td>
+            <td>{{ cliente.numero_compras }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Clientes con Más Pagos Pendientes -->
+<h3>Clientes con Más Pagos Pendientes</h3>
+<table class="table table-striped shadow-sm rounded-border">
+    <thead>
+        <tr>
+            <th>Cliente</th>
+            <th>Saldo Pendiente (USD)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cliente in clientes_mas_pagos_pendientes %}
+        <tr>
+            <td>{{ cliente.cliente__nombre }}</td>
+            <td>{{ cliente.saldo_pendiente|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Reporte de Inventario - Sereias{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Reporte de Inventario Actual</h1>
+
+<p><strong>Descripción:</strong> Este reporte muestra el estado actual del inventario de la tienda. Incluye una lista de todos los productos en stock, junto con sus cantidades disponibles, el costo total (basado en el costo unitario y la cantidad en inventario), el precio total estimado de venta y la utilidad operativa (la diferencia entre el precio de venta y el costo).</p>
+<p><strong>Utilidad:</strong> Este reporte te ayuda a entender el valor total de tu inventario y te da una visión clara de cuánto puedes esperar recibir por la venta de todos tus productos.</p>
+
+<table class="table table-striped shadow-sm rounded-border">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Total Costo</th>
+            <th>Total Venta</th>
+            <th>Utilidad Operativa</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for producto in productos %}
+        <tr>
+            <td>{{ producto.codigo }}</td>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.cantidad }}</td>
+            <td>{{ producto.total_costo }} USD</td>
+            <td>{{ producto.total_precio }} USD</td>
+            <td>{{ producto.utilidad_operativa }} USD</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="text-center">No hay productos en el inventario.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="mt-4">
+    <h5>Total Costo: {{ total_costo }} USD</h5>
+    <h5>Total Venta: {{ total_venta }} USD</h5>
+    <h5>Total Utilidad: {{ total_utilidad }} USD</h5>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Reporte de Utilidad Generada - Sereias{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Reporte de Utilidad Generada</h1>
+
+<p><strong>Descripción:</strong> Este reporte calcula la utilidad generada por las ventas de productos en un rango de fechas específico. Muestra cada venta realizada, junto con la cantidad vendida, la utilidad por unidad, y la utilidad total generada por esa venta.</p>
+<p><strong>Utilidad:</strong> Te permite evaluar el rendimiento financiero de las ventas, ayudándote a entender qué productos están generando más beneficio y en qué periodos de tiempo se están realizando las ventas más rentables.</p>
+
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col">
+            <input type="date" class="form-control" name="fecha_inicio" placeholder="Fecha Inicio" value="{{ request.GET.fecha_inicio }}">
+        </div>
+        <div class="col">
+            <input type="date" class="form-control" name="fecha_fin" placeholder="Fecha Fin" value="{{ request.GET.fecha_fin }}">
+        </div>
+        <div class="col">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </div>
+</form>
+
+<div class="mt-4">
+    <h5>Total Utilidad Generada: {{ total_utilidad }} USD</h5>
+</div>
+
+<table class="table table-striped shadow-sm rounded-border mt-4">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Producto</th>
+            <th>Cantidad Vendida</th>
+            <th>Utilidad por Unidad</th>
+            <th>Total Utilidad</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for movimiento in movimientos %}
+        <tr>
+            <td>{{ movimiento.fecha }}</td>
+            <td>{{ movimiento.producto.nombre }}</td>
+            <td>{{ movimiento.cantidad }}</td>
+            <td>{{ movimiento.producto.utilidad_unitaria }} USD</td>
+            <td>{{ movimiento.utilidad_total }} USD</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No se encontraron ventas en el periodo seleccionado.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

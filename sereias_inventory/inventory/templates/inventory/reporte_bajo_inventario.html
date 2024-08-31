@@ -1,0 +1,46 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Reporte de Bajo Inventario - Sereias{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Reporte de Productos con Bajo Inventario</h1>
+
+<p><strong>Descripción:</strong> Este reporte lista los productos cuyo stock está por debajo de un umbral específico que se define al generar el reporte. Esencialmente, te muestra los productos que están a punto de agotarse.</p>
+<p><strong>Utilidad:</strong> Este reporte es esencial para la gestión del inventario, ya que te alerta sobre los productos que necesitan ser reabastecidos, ayudando a prevenir la falta de stock y asegurar que siempre puedas satisfacer la demanda de los clientes.</p>
+
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col-6">
+            <input type="number" class="form-control" name="umbral" placeholder="Umbral de Inventario" value="{{ request.GET.umbral|default_if_none:5 }}">
+        </div>
+        <div class="col-6">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </div>
+</form>
+
+<table class="table table-striped shadow-sm rounded-border">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Unidad</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for producto in productos %}
+        <tr>
+            <td>{{ producto.codigo }}</td>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.cantidad }}</td>
+            <td>{{ producto.unidad }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">No hay productos con bajo inventario.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

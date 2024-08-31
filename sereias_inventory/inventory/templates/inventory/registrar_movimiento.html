@@ -1,0 +1,16 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Registrar Movimiento - Sereias{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Registrar Movimiento de Inventario</h1>
+
+<div class="card card-custom bg-light p-4">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Guardar Movimiento</button>
+        <a href="{% url 'inventario_principal' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

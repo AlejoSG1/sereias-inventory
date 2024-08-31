@@ -1,0 +1,53 @@
+<!-- reporte_movimientos.html -->
+
+{% extends 'inventory/base.html' %}
+
+{% block title %}Reporte de Movimientos - Sereias{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Reporte de Movimientos de Inventario</h1>
+
+<p><strong>Descripción:</strong> Este reporte detalla todos los movimientos de inventario realizados en un rango de fechas específico. Los movimientos incluyen entradas, salidas, ventas, devoluciones, y cualquier ajuste realizado en el inventario.</p>
+<p><strong>Utilidad:</strong> Es útil para rastrear cómo y cuándo se han movido los productos en el inventario, proporcionando un registro claro de todas las operaciones que han afectado el stock durante un período determinado.</p>
+
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col">
+            <input type="date" class="form-control" name="fecha_inicio" placeholder="Fecha Inicio" value="{{ request.GET.fecha_inicio }}">
+        </div>
+        <div class="col">
+            <input type="date" class="form-control" name="fecha_fin" placeholder="Fecha Fin" value="{{ request.GET.fecha_fin }}">
+        </div>
+        <div class="col">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </div>
+</form>
+
+<table class="table table-striped shadow-sm rounded-border">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Producto</th>
+            <th>Concepto</th>
+            <th>Cantidad</th>
+            <th>Observaciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for movimiento in movimientos %}
+        <tr>
+            <td>{{ movimiento.fecha }}</td>
+            <td>{{ movimiento.producto.nombre }}</td>
+            <td>{{ movimiento.concepto }}</td>
+            <td>{{ movimiento.cantidad }}</td>
+            <td>{{ movimiento.observaciones }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No hay movimientos registrados en este periodo.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
