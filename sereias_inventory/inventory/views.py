@@ -227,6 +227,7 @@ def crear_venta(request):
                         detalle_venta.venta = venta
                         producto = detalle_venta.producto
                         
+                        # Verificar si la cantidad es suficiente
                         if detalle_venta.cantidad > producto.cantidad:
                             mensajes_error.append(f"No hay suficiente stock para {producto.nombre}. Quedan {producto.cantidad} unidades.")
                             hay_error = True
@@ -235,8 +236,8 @@ def crear_venta(request):
                             detalle_venta.subtotal = detalle_venta.cantidad * detalle_venta.precio_unitario
                             detalle_venta.save()
 
-                            producto.cantidad -= detalle_venta.cantidad
-                            producto.save()
+                            # Aquí ya no reducimos manualmente la cantidad de productos.
+                            # La reducción se manejará en el modelo `MovimientoInventario`.
 
                             MovimientoInventario.objects.create(
                                 producto=producto,
@@ -248,7 +249,7 @@ def crear_venta(request):
                             total += detalle_venta.subtotal
 
                     if hay_error:
-                        raise Exception("\n".join(mensajes_error))
+                        raise IntegrityError("\n".join(mensajes_error))
                     
                     venta.total = total
                     venta.es_pedido = es_pedido
@@ -263,8 +264,7 @@ def crear_venta(request):
 
                     return redirect('detalle_venta', venta_id=venta.id)
 
-            except Exception as e:
-                transaction.set_rollback(True)
+            except IntegrityError as e:
                 messages.error(request, str(e))
 
         else:
@@ -277,6 +277,7 @@ def crear_venta(request):
         'cliente_form': cliente_form,
         'detalle_venta_formset': detalle_venta_formset,
     })
+
 
 # def detalle_venta(request, venta_id):
 #     venta = get_object_or_404(Venta, id=venta_id)
@@ -656,3 +657,4 @@ def dashboard_analisis_ventas(request):
     }
 
     return render(request, 'inventory/dashboard_analisis_ventas.html', context)
+
