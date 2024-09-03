@@ -5,6 +5,16 @@
 {% block content %}
 <h1 class="mb-4">Crear Venta</h1>
 
+{% if messages %}
+    <div class="alert alert-dismissible fade show" role="alert">
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
 
 <div class="card card-custom bg-light p-4">
     <form method="post">
@@ -36,6 +46,7 @@
                             0.00
                         </td>
                         <td>
+                            <input type="checkbox" class="form-check-input d-none" name="{{ form.DELETE.name }}" id="id_{{ form.prefix }}-DELETE">
                             <button type="button" class="btn btn-danger btn-sm remove-item">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -80,7 +91,7 @@
             let totalProductos = 0;
             let totalVenta = 0;
 
-            $('#formset-container tr').each(function() {
+            $('#formset-container tr:visible').each(function() {  // Considera solo las filas visibles
                 const cantidad = parseInt($(this).find('[name$="cantidad"]').val()) || 0;
                 const precioUnitario = parseFloat($(this).find('.precio-unitario').text()) || 0;
                 const precioTotal = cantidad * precioUnitario;
@@ -93,6 +104,7 @@
             $('#total-productos').text(totalProductos);
             $('#precio-total-venta').text(totalVenta.toFixed(2));
         }
+
 
         // Función para obtener el stock disponible y realizar la validación
         function validarStock(callback) {
@@ -198,6 +210,19 @@
                 $('#informacion-envio').hide();
             }
         });
+    });
+    $(document).on('click', '.remove-item', function(e) {
+    e.preventDefault();
+
+    // Encuentra el checkbox oculto y márcalo
+    const row = $(this).closest('tr');
+    row.find('input[name$="-DELETE"]').prop('checked', true);
+
+    // Oculte la fila del formulario en la interfaz
+    row.hide();
+
+    // Actualiza los totales después de eliminar un elemento
+    actualizarTotales();
     });
 </script>
 

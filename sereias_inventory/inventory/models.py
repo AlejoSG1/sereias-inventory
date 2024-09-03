@@ -59,6 +59,7 @@ class Producto(models.Model):
     def __str__(self):
         return self.nombre
 
+# Modelo MovimientoInventario
 class MovimientoInventario(models.Model):
     CONCEPTOS = [
         ('entrada', 'Entrada'),
@@ -77,24 +78,25 @@ class MovimientoInventario(models.Model):
     observaciones = models.TextField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if self.concepto == 'entrada':
-            self.producto.cantidad += self.cantidad
-        elif self.concepto == 'salida':
+        if self.concepto in ['salida', 'venta']:
+            # Verificar que la cantidad no se haga negativa
+            if self.producto.cantidad < self.cantidad:
+                raise ValueError(f"No hay suficiente stock para realizar esta operación. Quedan {self.producto.cantidad} unidades.")
             self.producto.cantidad -= self.cantidad
-        elif self.concepto == 'venta':
-            self.producto.cantidad -= self.cantidad
-        elif self.concepto == 'devolución':
+        elif self.concepto in ['entrada', 'devolución']:
             self.producto.cantidad += self.cantidad
-        elif self.concepto == 'ajuste':
-            # Aquí podríamos manejar ajustes específicos
-            pass
-        # Evitar modificar la cantidad si es "cantidad_inicial"
-        if self.concepto != 'cantidad_inicial':
-            self.producto.save()
+        
+        # Asegurar que la cantidad no sea negativa antes de guardar
+        if self.producto.cantidad < 0:
+            raise ValueError("La cantidad no puede ser negativa.")
+
+        # Guardar el producto y el movimiento
+        self.producto.save()
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.concepto.capitalize()} de {self.cantidad} {self.producto.unidad} - {self.producto.nombre}"
+
 
 class Cliente(models.Model):
     nombre = models.CharField(max_length=255)
