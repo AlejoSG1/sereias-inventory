@@ -1,0 +1,140 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Generar Proforma{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Generar Proforma</h1>
+
+<div class="card card-custom bg-light p-4">
+    <form method="post">
+        {% csrf_token %}
+        <h3>Información del Cliente</h3>
+        {{ cliente_form.as_p }}
+
+        <h3 class="mt-4">Productos</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Precio Total</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody id="formset-container">
+                {{ detalle_venta_formset.management_form }}
+                {% for form in detalle_venta_formset %}
+                    <tr>
+                        <td>{{ form.producto }}</td>
+                        <td>{{ form.cantidad }}</td>
+                        <td class="precio-unitario">
+                            0.00
+                        </td>
+                        <td class="precio-total">
+                            0.00
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm remove-item">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="#" id="add-more" class="btn btn-success">Agregar Producto</a>
+        <hr>
+        <h3>Resumen de la Proforma</h3>
+        <p>Total de Productos: <span id="total-productos">0</span></p>
+        <p>Precio Total de Proforma: <span id="precio-total-venta">0.00</span> USD</p>
+
+        <button type="submit" class="btn btn-primary">Generar Proforma</button>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function() {
+        // Función para actualizar los totales en la tabla y en el resumen
+        function actualizarTotales() {
+            let totalProductos = 0;
+            let totalVenta = 0;
+
+            $('#formset-container tr:visible').each(function() {
+                const cantidad = parseInt($(this).find('[name$="cantidad"]').val()) || 0;
+                const precioUnitario = parseFloat($(this).find('.precio-unitario').text()) || 0;
+                const precioTotal = cantidad * precioUnitario;
+
+                $(this).find('.precio-total').text(precioTotal.toFixed(2));
+                totalProductos += cantidad;
+                totalVenta += precioTotal;
+            });
+
+            $('#total-productos').text(totalProductos);
+            $('#precio-total-venta').text(totalVenta.toFixed(2));
+        }
+
+        // Evento cuando se selecciona un producto
+        $(document).on('change', '#formset-container select[name$="producto"]', function() {
+            const row = $(this).closest('tr');
+            const productoId = $(this).val();
+
+            if (productoId) {
+                $.ajax({
+                    url: `/inventario/obtener_precio_unitario/?id=${productoId}`,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        row.find('.precio-unitario').text(data.precio_unitario.toFixed(2));
+                        actualizarTotales();
+                    }
+                });
+            }
+        });
+
+        // Evento cuando se cambia la cantidad
+        $(document).on('input', '#formset-container input[name$="cantidad"]', function() {
+            actualizarTotales();
+        });
+
+        // Función para agregar una nueva fila de producto
+        $('#add-more').click(function(e) {
+            e.preventDefault();
+
+            var formsetContainer = $('#formset-container');
+            var totalForms = $('#id_form-TOTAL_FORMS');
+            var formCount = parseInt(totalForms.val());
+
+            var newForm = formsetContainer.find('tr').first().clone();
+
+            newForm.find('select, input').each(function() {
+                var name = $(this).attr('name').replace(/-\d+-/, `-${formCount}-`);
+                var id = $(this).attr('id').replace(/-\d+-/, `-${formCount}-`);
+                $(this).attr({'name': name, 'id': id}).val('');
+            });
+
+            newForm.find('.precio-unitario').text('0.00');
+            newForm.find('.precio-total').text('0.00');
+
+            totalForms.val(formCount + 1);
+            formsetContainer.append(newForm);
+
+            actualizarTotales();
+        });
+
+        // Función para eliminar una fila de producto
+        $(document).on('click', '.remove-item', function(e) {
+            e.preventDefault();
+
+            const row = $(this).closest('tr');
+            row.find('input[name$="-DELETE"]').prop('checked', true); // Marcar el checkbox de eliminar
+            row.hide(); // Ocultar la fila
+
+            actualizarTotales(); // Actualizar los totales
+        });
+
+        actualizarTotales(); // Llamar a la función cuando se cargue la página
+    });
+</script>
+
+{% endblock %}

@@ -658,3 +658,92 @@ def dashboard_analisis_ventas(request):
 
     return render(request, 'inventory/dashboard_analisis_ventas.html', context)
 
+def generar_proforma(request):
+    return render(request, 'inventory/generar_proforma.html')
+
+def generar_proforma_pdf(cliente, detalles, total):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="Proforma.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    elements = []
+
+    styles = getSampleStyleSheet()
+
+    # Información del Cliente
+    cliente_info = f"""
+    <strong>BILLING TO:</strong><br/>
+    {cliente.nombre}<br/>
+    ID: {cliente.identificacion}<br/>
+    Email: {cliente.email}<br/>
+    Phone: {cliente.telefono}<br/>
+    Address: {cliente.direccion}
+    """
+    elements.append(Paragraph(cliente_info, styles['Normal']))
+
+    elements.append(Paragraph("<br/><br/>", styles['Normal']))
+
+    # Tabla de productos
+    data = [['SL', 'Item Description', 'Price', 'Qty', 'Total']]
+    for i, detalle in enumerate(detalles, 1):
+        data.append([str(i), detalle['producto'], f"${detalle['precio_unitario']:.2f}", str(detalle['cantidad']), f"${detalle['subtotal']:.2f}"])
+
+    # Subtotal y total
+    data.append(['', '', '', 'Sub Total:', f"${total:.2f}"])
+    data.append(['', '', '', 'Tax:', '0.00'])
+    data.append(['', '', '', 'Total:', f"${total:.2f}"])
+
+    # Crear la tabla
+    table = Table(data, colWidths=[0.5 * inch, 2.5 * inch, 1.25 * inch, 1 * inch, 1.5 * inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    elements.append(table)
+
+    doc.build(elements)
+
+    return response
+
+def generar_proforma(request):
+    DetalleVentaFormSet = modelformset_factory(DetalleVenta, form=DetalleVentaForm, extra=1, can_delete=True)
+
+    if request.method == 'POST':
+        cliente_form = ClienteForm(request.POST)
+        detalle_venta_formset = DetalleVentaFormSet(request.POST, queryset=DetalleVenta.objects.none())
+
+        if cliente_form.is_valid() and detalle_venta_formset.is_valid():
+            cliente = cliente_form.save(commit=False)  # No guardamos el cliente en la BD
+            detalles = []
+            total = 0
+
+            for form in detalle_venta_formset:
+                detalle = form.cleaned_data
+                producto = detalle['producto']
+                cantidad = detalle['cantidad']
+                precio_unitario = producto.precio_unitario
+                subtotal = cantidad * precio_unitario
+                total += subtotal
+                detalles.append({
+                    'producto': producto.nombre,
+                    'cantidad': cantidad,
+                    'precio_unitario': precio_unitario,
+                    'subtotal': subtotal
+                })
+
+            # Generar PDF
+            return generar_proforma_pdf(cliente, detalles, total)
+
+    else:
+        cliente_form = ClienteForm()
+        detalle_venta_formset = DetalleVentaFormSet(queryset=DetalleVenta.objects.none())
+
+    return render(request, 'inventory/generar_proforma.html', {
+        'cliente_form': cliente_form,
+        'detalle_venta_formset': detalle_venta_formset,
+    })

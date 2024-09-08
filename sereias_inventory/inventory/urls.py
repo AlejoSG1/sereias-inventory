@@ -29,4 +29,7 @@ urlpatterns = [
     path('pagos/', views.lista_pagos, name='lista_pagos'),
     path('pagos/excel/', views.generar_excel_pagos, name='generar_excel_pagos'),
     path('dashboard/', views.dashboard_analisis_ventas, name='dashboard_analisis_ventas'),
+    path('generar_proforma/', views.generar_proforma, name='generar_proforma'),
+    path('generar_proforma/', views.generar_proforma, name='generar_proforma'),
+
 ]
