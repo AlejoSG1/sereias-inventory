@@ -32,7 +32,7 @@
         {% for producto in productos %}
         <tr>
             <td>{{ producto.codigo }}</td>
-            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.nombre }} {{ producto.presentacion }} {{ producto.unidad }}</td>
             <td>{{ producto.cantidad }}</td>
             <td>{{ producto.unidad }}</td>
         </tr>

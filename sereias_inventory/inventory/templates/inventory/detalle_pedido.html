@@ -24,7 +24,7 @@
     <tbody>
         {% for detalle in pedido.venta.detalles.all %}
         <tr>
-            <td>{{ detalle.producto.nombre }}</td>
+            <td>{{ detalle.producto.nombre }} {{ detalle.producto.presentacion }} {{ detalle.producto.unidad }}</td>
             <td>{{ detalle.cantidad }}</td>
             <td>${{ detalle.precio_unitario }}</td>
             <td>${{ detalle.subtotal }}</td>

@@ -40,7 +40,7 @@
         {% for movimiento in movimientos %}
         <tr>
             <td>{{ movimiento.fecha }}</td>
-            <td>{{ movimiento.producto.nombre }}</td>
+            <td>{{ movimiento.producto.nombre }} {{ movimiento.producto.presentacion }} {{ movimiento.producto.unidad }}</td>
             <td>{{ movimiento.cantidad }}</td>
             <td>{{ movimiento.producto.utilidad_unitaria }} USD</td>
             <td>{{ movimiento.utilidad_total }} USD</td>

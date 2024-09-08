@@ -9,7 +9,7 @@ class Producto(models.Model):
         ('ml', 'Mililitros'),
         ('unidad', 'Unidades'),
     ]
-    
+
     CATEGORIAS = [
         ('Jabón Líquido', 'Jabón Líquido'),
         ('Jabón Sólido', 'Jabón Sólido'),
@@ -24,7 +24,7 @@ class Producto(models.Model):
         ('Velas', 'Velas'),
         ('Hinode-Otros', 'Hinode-Otros'),
     ]
-    
+
     codigo = models.CharField(max_length=20, unique=True)
     categoria = models.CharField(max_length=50, choices=CATEGORIAS)
     nombre = models.CharField(max_length=100)
@@ -57,7 +57,7 @@ class Producto(models.Model):
             )
 
     def __str__(self):
-        return self.nombre
+        return f'{self.nombre} {self.presentacion} {self.unidad}'
 
 # Modelo MovimientoInventario
 class MovimientoInventario(models.Model):
@@ -70,7 +70,7 @@ class MovimientoInventario(models.Model):
         ('ajuste', 'Ajuste'),
         ('otro', 'Otro'),
     ]
-    
+
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     concepto = models.CharField(max_length=20, choices=CONCEPTOS)
     cantidad = models.PositiveIntegerField()
@@ -85,7 +85,7 @@ class MovimientoInventario(models.Model):
             self.producto.cantidad -= self.cantidad
         elif self.concepto in ['entrada', 'devolución']:
             self.producto.cantidad += self.cantidad
-        
+
         # Asegurar que la cantidad no sea negativa antes de guardar
         if self.producto.cantidad < 0:
             raise ValueError("La cantidad no puede ser negativa.")
@@ -108,7 +108,7 @@ class Cliente(models.Model):
 
     def __str__(self):
         return self.nombre
-    
+
 class Venta(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     fecha = models.DateTimeField(default=timezone.now)
@@ -132,7 +132,7 @@ class Venta(models.Model):
     def __str__(self):
         return f"Venta {self.id} - {self.cliente.nombre}"
 
-    
+
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, related_name='detalles', on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.PROTECT)

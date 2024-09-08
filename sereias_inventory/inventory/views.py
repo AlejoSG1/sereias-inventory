@@ -192,11 +192,11 @@ def eliminar_cliente(request, cliente_id):
 
 def crear_venta(request):
     DetalleVentaFormSet = modelformset_factory(DetalleVenta, form=DetalleVentaForm, extra=1, can_delete=True)
-    
+
     if request.method == 'POST':
         cliente_form = ClienteForm(request.POST)
         detalle_venta_formset = DetalleVentaFormSet(request.POST, queryset=DetalleVenta.objects.none())
-        
+
         nombre = request.POST.get('nombre')
         identificacion = request.POST.get('identificacion')
         es_pedido = request.POST.get('es_pedido') == 'on'
@@ -221,12 +221,12 @@ def crear_venta(request):
             try:
                 with transaction.atomic():
                     venta = Venta.objects.create(cliente=cliente)
-                    
+
                     for detalle_form in detalle_venta_formset:
                         detalle_venta = detalle_form.save(commit=False)
                         detalle_venta.venta = venta
                         producto = detalle_venta.producto
-                        
+
                         # Verificar si la cantidad es suficiente
                         if detalle_venta.cantidad > producto.cantidad:
                             mensajes_error.append(f"No hay suficiente stock para {producto.nombre}. Quedan {producto.cantidad} unidades.")
@@ -245,12 +245,12 @@ def crear_venta(request):
                                 cantidad=detalle_venta.cantidad,
                                 observaciones=f"Venta registrada para {venta.cliente.nombre}"
                             )
-                            
+
                             total += detalle_venta.subtotal
 
                     if hay_error:
                         raise IntegrityError("\n".join(mensajes_error))
-                    
+
                     venta.total = total
                     venta.es_pedido = es_pedido
                     venta.save()
@@ -272,7 +272,7 @@ def crear_venta(request):
     else:
         cliente_form = ClienteForm()
         detalle_venta_formset = DetalleVentaFormSet(queryset=DetalleVenta.objects.none())
-    
+
     return render(request, 'inventory/crear_venta.html', {
         'cliente_form': cliente_form,
         'detalle_venta_formset': detalle_venta_formset,
@@ -286,7 +286,7 @@ def crear_venta(request):
 def buscar_cliente(request):
     query = request.GET.get('q', '')
     resultados = Cliente.objects.filter(Q(nombre__icontains=query) | Q(email__icontains=query))
-    
+
     data = [{
         'id': cliente.id,
         'nombre': cliente.nombre,
@@ -326,7 +326,7 @@ def obtener_stock(request):
 
 def generar_factura_pdf(request, venta_id):
     venta = Venta.objects.select_related('cliente').prefetch_related('detalles__producto').get(id=venta_id)
-    
+
     # Asegúrate de obtener también los detalles del pedido si es un pedido
     pedido = None
     if venta.es_pedido:
@@ -351,7 +351,7 @@ def generar_factura_pdf(request, venta_id):
     # Título y Fecha
     elements.append(Paragraph(f"INVOICE", styles['Title']))
     elements.append(Paragraph(f"Date: {venta.fecha.strftime('%d/%m/%Y')}", styles['Normal']))
-    
+
     # Información del Cliente
     cliente_info = f"""
     <strong>BILLING TO:</strong><br/>
@@ -378,7 +378,7 @@ def generar_factura_pdf(request, venta_id):
     # Tabla de productos
     data = [['SL', 'Item Description', 'Price', 'Qty', 'Total']]
     for i, detalle in enumerate(detalles, 1):
-        data.append([str(i), detalle.producto.nombre, f"${detalle.precio_unitario:.2f}", str(detalle.cantidad), f"${detalle.subtotal:.2f}"])
+        data.append([str(i), f'{detalle.producto.nombre} {detalle.producto.presentacion} {detalle.producto.unidad}', f"${detalle.precio_unitario:.2f}", str(detalle.cantidad), f"${detalle.subtotal:.2f}"])
 
     # Subtotal y total
     data.append(['', '', '', 'Sub Total:', f"${venta.total:.2f}"])
@@ -449,7 +449,7 @@ def historial_ventas(request):
 def detalle_venta(request, venta_id):
     # Usamos select_related para cargar la relación de cliente en la misma consulta
     venta = get_object_or_404(Venta.objects.select_related('cliente'), id=venta_id)
-    
+
     # Usamos prefetch_related para cargar todas las relaciones DetalleVenta y Producto en la misma consulta
     detalles = venta.detalles.select_related('producto').all()
 
@@ -501,7 +501,7 @@ def detalle_pedido(request, pedido_id):
 
 def actualizar_estado_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
-    
+
     if request.method == 'POST':
         nuevo_estado = request.POST.get('estado')
         if nuevo_estado:
@@ -525,10 +525,10 @@ def registrar_pago(request, venta_id):
 
         if monto > 0 and monto <= venta.saldo_pendiente:
             Pago.objects.create(venta=venta, monto=monto, forma_pago=forma_pago, fecha_pago=fecha_pago)
-            
+
             # Después de registrar el pago, actualizar el estado de pago de la venta
             venta.actualizar_estado_pago()
-            
+
             messages.success(request, 'El pago ha sido registrado correctamente.')
         else:
             messages.error(request, 'Monto inválido o superior al saldo pendiente.')
